@@ -92,7 +92,7 @@ class EnemyBoard:
                 pass
 
 pygame.init()
-pygame.display.set_caption('Naval Battle')
+pygame.display.set_caption('Naval Battle.')
 size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
 board1 = MyBoard()
