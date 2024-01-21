@@ -655,4 +655,3 @@ def start():
                 main = MainScene()
 
 start()
-
