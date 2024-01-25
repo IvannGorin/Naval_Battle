@@ -3,52 +3,53 @@ import pygame
 
 class MyBoard:
     def __init__(self):
-        self.board = [[0] * 12 for i in range(12)] ## 0 - пусто, 1 - корабль, 2 - мимо, 3 - попал
+        self.board = [[0] * 12 for _ in range(12)]
+        # создается поле 12 на 12, где мы будем рассматривать только поле 10 * 10, ведь края нужны только для
+        # сокращения действий после попадания
         self.width, self.height = 11, 11
         self.hit = []
         self.cell_size = 40
         self.top, self.left = 5, 0
         self.theships = []
         self.recomendation = []
-        self.ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
+        self.ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]  # все корабли
         for ship in range(len(self.ships)):
             while True:
                 no = 0
                 from random import randint
                 rotate = randint(0, 1)
-                if rotate == 0:  # gorizontalno
+                if rotate == 0:  # если корабль ставится горизонтально
                     first = randint(1, 10)
                     second_start = randint(1, 10 - self.ships[ship])
                     for i in range(-1, self.ships[ship] + 1):
                         for g in range(-1, 2):
                             if self.board[first + g][second_start + i] != 0:
                                 no = 1
-                    if no == 0:
+                    if no == 0:  # если ближайщие клетки пустые
                         add = []
                         for i in range(self.ships[ship]):
                             self.board[first][second_start + i] = 1
-                            add.append([[first, second_start + i], False])
-                        self.theships.append(add)
+                            add.append([[first, second_start + i], False])  # второе значение - уничтожено - ли
+                        self.theships.append(add)  # добавляем корабль в список кораблей с их координатами
                         break
-                elif rotate == 1:  # verticalno
+                elif rotate == 1:  # если корабль ставится вертикально
                     second = randint(1, 10)
                     first_start = randint(1, 10 - self.ships[ship])
                     for i in range(-1, self.ships[ship] + 1):
                         for g in range(-1, 2):
                             if self.board[first_start + i][second + g] != 0:
                                 no = 1
-                    if no == 0:
+                    if no == 0:  # если ближайщие клетки пустые
                         add = []
                         for i in range(self.ships[ship]):
                             self.board[first_start + i][second] = 1
-                            add.append([[first_start + i, second], False])
-                        self.theships.append(add)
+                            add.append([[first_start + i, second], False])  # второе значение - уничтожено - ли
+                        self.theships.append(add)  # добавляем корабль в список кораблей с их координатами
                         break
 
-
     def render(self, screen):
-        letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'К']
-        numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+        letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'К']  # буквы для рендера
+        numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']  # цифры для рендера
         text_coord1 = 17
         text_coord2 = 17
         for line in range(10):
@@ -73,14 +74,14 @@ class MyBoard:
         screen.blit(player, pl_rect)
         for i in range(1, 11):
             for g in range(1, 11):
-                if self.board[i][g] == 0:  # обычная клетка - квадрат с синими сторонами
+                if self.board[i][g] == 0:  # если клетка непроверенна
                     pygame.draw.rect(screen, (109, 104, 255), (self.top + g * self.cell_size,
                                                                self.left + i * self.cell_size,
                                                                self.cell_size, self.cell_size), 1)
-                elif self.board[i][g] == 1:
+                elif self.board[i][g] == 1:  # отображение вашего корабля
                     pygame.draw.rect(screen, (0, 7, 195), (self.top + g * self.cell_size,
-                                                               self.left + i * self.cell_size,
-                                                               self.cell_size, self.cell_size))
+                                                           self.left + i * self.cell_size,
+                                                           self.cell_size, self.cell_size))
 
                 elif self.board[i][g] == 2:  # пустая простреленная клетка, с серым фоном и с более светлыми сторонами
                     pygame.draw.rect(screen, (209, 209, 209), (self.top + g * self.cell_size,
@@ -103,7 +104,7 @@ class MyBoard:
                                      (self.top + (g + 1) * self.cell_size, self.left + i * self.cell_size),
                                      (self.top + g * self.cell_size, self.left + (i + 1) * self.cell_size), 2)
 
-    def get_cell(self, mouse_pos):
+    def get_cell(self, mouse_pos):  # определяет квадрат
         if self.top <= int(mouse_pos[0]) <= self.height * self.cell_size + self.top and \
                 self.left <= int(mouse_pos[-1]) <= self.width * self.cell_size + self.left:
             cell_coords = [int(mouse_pos[0]) - self.top, int(mouse_pos[-1]) - self.left]
@@ -118,23 +119,17 @@ class MyBoard:
         from random import randint
         stop = False
         while True:
-            if is_game_over(board1, board2) != '':
+            if is_game_over(board1, board2) != '':  # если все корабли уже уничтожены
                 break
-            if len(self.recomendation) > 0:
-                coord = self.recomendation[randint(0, len(self.recomendation) - 1)]
-                print('Из списка рандома:')
-                print(self.recomendation)
-                print('Рандом выбрал:')
-                print(coord)
-                if not (1 <= coord[0] <= 10 and 1 <= coord[1] <= 10):
+            if len(self.recomendation) > 0:  # если было попадание без уничтожения
+                coord = self.recomendation[randint(0, len(self.recomendation) - 1)]  # координаты - одна из рекомендаций
+                if not (1 <= coord[0] <= 10 and 1 <= coord[1] <= 10):  # если вне поля, то убираем
                     self.recomendation.remove(coord)
-                    print('И убрал, тк вне поля')
                 if self.board[coord[0]][coord[1]] == 1 and (1 <= coord[0] <= 10 and 1 <= coord[1] <= 10):
+                    # если на поле находится корабль - попадаем в него
                     self.board[coord[0]][coord[1]] = 3
-                    print('И попал')
-                    if not self.check(coord[0], coord[1]):
+                    if not self.check(coord[0], coord[1]):  # если весь корабль уничтожен (конкретней в той функции)
                         self.recomendation.clear()
-                        print('Добив корабль')
                         stop = True
                     screen.fill('white')
                     board2.render(screen)
@@ -143,107 +138,76 @@ class MyBoard:
                     pygame.time.wait(1000)
                     if stop:
                         continue
-                    elif len(self.hit) == 2:
-                        print('Тк попал второй раз')
-                        print('Самое первое попадание и это попадание')
-                        print([self.hit[0], coord])
+                    elif len(self.hit) == 2:  # если уже попали 2 раза
                         removelist = []
-                        if self.hit[0][0] == coord[0]:
-                            print('Общая прямая горизонтальная')
+                        if self.hit[0][0] == coord[0]:  # если совпадает по горизонтале
                             first = self.hit[0][0]
-                            print(first)
-                            print('Рекомендация до сортировки')
-                            print(self.recomendation)
                             for i in self.recomendation:
-                                if i[0] != first:
+                                if i[0] != first:  # если не на той же горизонтале - убрать
                                     removelist.append(i)
                             for i in removelist:
                                 self.recomendation.remove(i)
                             self.recomendation.remove(coord)
-                            print('После')
-                            print(self.recomendation)
-                            print('Не помню, что делает')
-                            if self.hit[0][1] < coord[1]:
+                            if self.hit[0][1] < coord[1]:  # добавить в рекомендацию новую соседнюю клетку
                                 self.recomendation.append([first, coord[1] + 1])
                             else:
                                 self.recomendation.append([first, coord[1] - 1])
-                            print(self.recomendation)
-                        elif self.hit[0][1] == coord[1]:
-                            print('Общая прямая вертикальная')
+                        elif self.hit[0][1] == coord[1]:  # если совпадает по вертикале
                             second = self.hit[0][1]
-                            print(second)
-                            print('Рекомендация до сортировки')
-                            print(self.recomendation)
                             for i in self.recomendation:
-                                if i[1] != second:
+                                if i[1] != second:  # если не сопадает по вертикале - убрать
                                     removelist.append(i)
                             for i in removelist:
                                 self.recomendation.remove(i)
                             self.recomendation.remove(coord)
-                            print('После')
-                            print(self.recomendation)
-                            print('Не знаю что делает')
-                            if self.hit[0][0] < coord[0]:
+                            if self.hit[0][0] < coord[0]:  # добавить новую соседнюю клетку
                                 self.recomendation.append([coord[0] + 1, second])
                             else:
                                 self.recomendation.append([coord[0] - 1, second])
-                            print(self.recomendation)
-                    elif len(self.hit) == 3:
-                        print('Попал в 3й раз')
-                        print('До сортировки')
-                        print(self.recomendation)
-                        print('После')
-                        if self.hit[0][0] == coord[0]:
+                    elif len(self.hit) == 3:  # если попали в 3 раз и не убили
+                        if self.hit[0][0] == coord[0]:  # если общая прямая - горизонтальная
                             first = self.hit[0][0]
-                            if self.hit[0][1] < coord[1]:
+                            if self.hit[0][1] < coord[1]:  # добавить новую соседнюю
                                 self.recomendation.append([first, coord[1] + 1])
                             else:
                                 self.recomendation.append([first, coord[1] - 1])
-                        elif self.hit[0][1] == coord[1]:
+                        elif self.hit[0][1] == coord[1]:  # если общая прямая - вертикальная
                             second = self.hit[0][1]
-                            if self.hit[0][0] < coord[0]:
+                            if self.hit[0][0] < coord[0]:  # добавить новую соседнюю
                                 self.recomendation.append([coord[0] + 1, second])
                             else:
                                 self.recomendation.append([coord[0] - 1, second])
                         self.recomendation.remove(coord)
-                        print(self.recomendation)
                 elif self.board[coord[0]][coord[1]] == 3 and (1 <= coord[0] <= 10 and 1 <= coord[1] <= 10):
+                    # если клетка уже уничтожена - убрать из рекомендации
                     self.recomendation.remove(coord)
-                    print('Там уже корабль')
-                    print(self.recomendation)
                 elif self.board[coord[0]][coord[1]] == 0 and (1 <= coord[0] <= 10 and 1 <= coord[1] <= 10):
+                    # если клетка пустая - изменить на клетку с промахом
                     self.board[coord[0]][coord[1]] = 2
-                    print('Там ничего нет')
                     screen.fill('white')
                     board2.render(screen)
                     board1.render(screen)
                     pygame.display.flip()
                     pygame.time.wait(1000)
                     self.recomendation.remove(coord)
-                    print(self.recomendation)
                     break
                 elif self.board[coord[0]][coord[1]] == 2 and (1 <= coord[0] <= 10 and 1 <= coord[1] <= 10):
-                    print('Там уже пустая клетка')
+                    # если клетка уже проверенна и там пусто - убрать из рекомендации
                     self.recomendation.remove(coord)
-                    print(self.recomendation)
-            else:
-                x, y = randint(1, 10), randint(1, 10)
-                if self.board[x][y] == 0:
+            else:  # если не рекомендаций
+                x, y = randint(1, 10), randint(1, 10)  # выбирается рандомная клетка
+                if self.board[x][y] == 0:  # если там пусто - заменить на промах
                     self.board[x][y] = 2
-                    print('Промазал')
-                    print(x, y)
                     screen.fill('white')
                     board2.render(screen)
                     board1.render(screen)
                     pygame.display.flip()
                     pygame.time.wait(1000)
                     break
-                elif self.board[x][y] == 1:
+                elif self.board[x][y] == 1:  # если там часть корабля - уничтожить его
                     self.board[x][y] = 3
-                    print('Попал впервые')
-                    print(x, y)
-                    if self.check(x, y):
-                        if len(self.hit) == 1:
+                    if self.check(x, y):  # если у корабля есть ещё части
+                        if len(self.hit) == 1:  # если попали в первый раз - в рекомендации добавить все соседние клетки
                             self.recomendation.append([x + 1, y])
                             self.recomendation.append([x - 1, y])
                             self.recomendation.append([x, y + 1])
@@ -254,46 +218,50 @@ class MyBoard:
                     board1.render(screen)
                     pygame.display.flip()
                     pygame.time.wait(1000)
-            if is_game_over(board1, board2) != '':
+            if is_game_over(board1, board2) != '':  # ещё раз проверка на наличие кораблей
                 break
-            print('')
 
-
-
-    def check(self, x, y):
-        for I in range(len(self.theships)):
-            for q in range(len(self.theships[I])):
-                if self.theships[I][q] == [[x, y], False]:
-                    self.theships[I][q][1] = True
+    def check(self, x, y):  # функция на проверку кораблей на полное уничтожение
+        for I in range(len(self.theships)):  # во всех кораблях
+            for q in range(len(self.theships[I])):  # по каждой клетке кораблей
+                if self.theships[I][q] == [[x, y], False]:  # если клетка совпадает с той, что даны в x, y
+                    self.theships[I][q][1] = True  # изменяем конкретно этой клетки на то, что в неё попали
                     if all(self.theships[I][r][1] for r in range(len(self.theships[I]))):
-                        if len(self.theships[I]) == 1:
+                        # если в данном корабле все клетки уничтожены
+                        if len(self.theships[I]) == 1:  # если корабль - единичка
+                            # уничтожаем все: пример
+                            # 000   111     0 - пусто, непроверенно
+                            # 0x0 > 1x1     1 - проверенно, мимо
+                            # 000   111     x - сам корабль
                             first = self.theships[I][0][0][0]
                             second = self.theships[I][0][0][1]
                             for i in range(-1, len(self.theships[I]) + 1):
                                 for g in range(-1, 2):
                                     if not (i == 0 and g == 0):
                                         self.board[first + g][second + i] = 2
-                        elif self.theships[I][1][0][0] == self.theships[I][0][0][0]:
-                            first = self.theships[I][0][0][0]
-                            second_start = min(x[0][1] for x in self.theships[I])
+                        elif self.theships[I][1][0][0] == self.theships[I][0][0][0]:  # если корабль располог. по гориз.
+                            first = self.theships[I][0][0][0]  # первая координата для всех едина
+                            second_start = min(x[0][1] for x in self.theships[I])  # вторая считается с минимальной
+                            # зачищается как в примере выше
                             for i in range(-1, len(self.theships[I]) + 1):
                                 for g in range(-1, 2):
                                     self.board[first + g][second_start + i] = 2
                             for i in range(len(self.theships[I])):
                                 self.board[first][second_start + i] = 3
-                        elif self.theships[I][1][0][1] == self.theships[I][0][0][1]:
-                            second = self.theships[I][0][0][1]
-                            first_start = min(x[0][0] for x in self.theships[I])
+                        elif self.theships[I][1][0][1] == self.theships[I][0][0][1]:  # если корабль располог. по верт.
+                            second = self.theships[I][0][0][1]  # второе - общее
+                            first_start = min(x[0][0] for x in self.theships[I])  # первая - считаем с минимума
+                            # также зачищаем
                             for i in range(-1, len(self.theships[I]) + 1):
                                 for g in range(-1, 2):
                                     self.board[first_start + i][second + g] = 2
                             for i in range(len(self.theships[I])):
                                 self.board[first_start + i][second] = 3
-                        self.hit.clear()
-                        return False
+                        self.hit.clear()  # обнуляем последние попадания
+                        return False  # корабль уничтожен
                     else:
                         self.hit.append([x, y])
-                        return True
+                        return True  # стандартное попадение
 
 
 class EnemyBoard:
@@ -301,8 +269,9 @@ class EnemyBoard:
         self.board = []
         for i in range(12):
             add = []
-            for g in range(12):
+            for g in range(12):  # отличается от MyBoard доп. индексом
                 add.append([0, 0])  # первое число - стреляли \ не стреляли, 2ое - есть корабль, нет
+                # по итогу всё работает также, только когда опираемя на координаты надо к индексу по другом обращаться
             self.board.append(add)
         self.theships = []
         self.width, self.height = 11, 11
@@ -342,7 +311,6 @@ class EnemyBoard:
                             add.append([[first_start + i, second], False])
                         self.theships.append(add)
                         break
-
 
     def render(self, screen):
         letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'К']
@@ -458,7 +426,7 @@ class EnemyBoard:
             return True
 
 
-class MainScene():
+class MainScene():  # основная сцена, главный экран
     def __init__(self):
         self.stop, self.cont, self.rules = False, False, False
         pygame.init()
@@ -482,14 +450,11 @@ class MainScene():
                 text_coord += 10
                 intro_rect.top = text_coord
                 intro_rect.x = 600
-                clickable.append(intro_rect)
+                clickable.append(intro_rect)  # добавляем координаты квадрата в кликабельное
             text_coord += intro_rect.height
             screen.blit(string_rendered, intro_rect)
-        while not self.stop and not self.cont and not self.rules:
+        while not self.stop and not self.cont and not self.rules:  # если у нас есть нажатие на 'кнопки' - прерывается
             for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        pass
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = event.pos
                     for i in clickable:
@@ -506,7 +471,7 @@ class MainScene():
         pygame.quit()
 
 
-class RulesScene():
+class RulesScene():  # сцена с правилами
     def __init__(self):
         pygame.init()
         self.back = False
@@ -515,7 +480,7 @@ class RulesScene():
         screen = pygame.display.set_mode((1400, 600))
         screen.fill('white')
         intro_text = ["Принцип «Морского боя» очень прост.",
-                      "Вы расставляете свои корабли на поле 10х10, оппонент расставляет свои.",
+                      "Корабли расставляются на поле боя, размером 10 на 10.",
                       "Далее вы по очереди делаете «выстрелы», кликая те или иные координаты поля.",
                       "Оппонент же запускает ответный огонь по вашим кораблям.",
                       "Побеждает тот, у кого к концу игры хотя бы один корабль устоял."]
@@ -540,7 +505,7 @@ class RulesScene():
         pygame.quit()
 
 
-class BattleScene():
+class BattleScene():  # сцена бойни
     def __init__(self):
         pygame.init()
         pygame.display.set_caption('Naval Battle')
@@ -559,16 +524,16 @@ class BattleScene():
                         board2.render(screen)
                         board1.render(screen)
                         pygame.display.flip()
-                        is_game_over(board1, board2)
+                        is_game_over(board1, board2)  # куча проверок на победу, до выстрелов и после
                         if is_game_over(board1, board2) == '':
                             board1.getfired(screen, board1, board2)
                             if is_game_over(board1, board2) != '':
                                 pygame.quit()
-                                Winner(is_game_over(board1, board2))
+                                WinnerScene(is_game_over(board1, board2))
                                 self.running = False
                         else:
                             pygame.quit()
-                            Winner(is_game_over(board1, board2))
+                            WinnerScene(is_game_over(board1, board2))
                             self.running = False
             if self.running:
                 board1.render(screen)
@@ -576,7 +541,7 @@ class BattleScene():
                 pygame.display.flip()
 
 
-class Winner():
+class WinnerScene():  # сцена победителя
     def __init__(self, winner):
         clickable = []
         pygame.init()
@@ -620,38 +585,39 @@ class Winner():
         pygame.quit()
 
 
-def is_game_over(board1, board2):
+def is_game_over(board1, board2):  # определение победителя
     winner = ''
     NOT = False
     for i in board1.board:
-        if any(g == 1 for g in i):
-            NOT = True
+        if any(g == 1 for g in i):  # если хотя бы один корабль цел
+            NOT = True  # оппонент не победил
             break
     if not NOT:
         winner = 'Оппонент победил :-('
     else:
         NOT = False
         for i in board2.board:
-            if any(g[1] == 1 and g[0] == 0 for g in i):
-                NOT = True
+            if any(g[1] == 1 and g[0] == 0 for g in i):  # если хотя бы один корабль цел
+                NOT = True  # вы не победили
                 break
         if not NOT:
             winner = 'Вы победили :-)'
     return winner
 
 
-def start():
+def start():  # главная 'шина' морского боя.
     main = MainScene()
     while True:
-        if main.stop:
+        if main.stop:  # если выход - выход из цикла, конец
             break
-        elif main.cont:
-            battle = BattleScene()
-            if not battle.running:
+        elif main.cont:  # если начать игру
+            battle = BattleScene()  # создаём сцену бойни
+            if not battle.running:  # если выход - выход из боя ВООБЩЕ
                 break
-        elif main.rules:
-            rules = RulesScene()
-            if rules.back:
-                main = MainScene()
+        elif main.rules:  # если посмотреть правила
+            rules = RulesScene()  # сцена правил
+            if rules.back:  # если выход - выход из правил
+                main = MainScene()  # новое главное меню
+
 
 start()
