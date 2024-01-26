@@ -166,17 +166,22 @@ class MyBoard:
                                 self.recomendation.append([coord[0] - 1, second])
                     elif len(self.hit) == 3:  # если попали в 3 раз и не убили
                         if self.hit[0][0] == coord[0]:  # если общая прямая - горизонтальная
-                            first = self.hit[0][0]
-                            if self.hit[0][1] < coord[1]:  # добавить новую соседнюю
-                                self.recomendation.append([first, coord[1] + 1])
-                            else:
-                                self.recomendation.append([first, coord[1] - 1])
+                            self.recomendation.clear()
+                            first = self.hit[0][0]  # добавили к каждой клетке по бокам проверку
+                            self.recomendation.append([first, self.hit[0][1] - 1])
+                            self.recomendation.append([first, self.hit[0][1] + 1])
+                            self.recomendation.append([first, self.hit[1][1] - 1])
+                            self.recomendation.append([first, self.hit[1][1] + 1])
+                            self.recomendation.append([first, self.hit[2][1] - 1])
+                            self.recomendation.append([first, self.hit[2][1] + 1])
                         elif self.hit[0][1] == coord[1]:  # если общая прямая - вертикальная
                             second = self.hit[0][1]
-                            if self.hit[0][0] < coord[0]:  # добавить новую соседнюю
-                                self.recomendation.append([coord[0] + 1, second])
-                            else:
-                                self.recomendation.append([coord[0] - 1, second])
+                            self.recomendation.append([self.hit[0][0] - 1, second])
+                            self.recomendation.append([self.hit[0][0] + 1, second])
+                            self.recomendation.append([self.hit[1][0] - 1, second])
+                            self.recomendation.append([self.hit[1][0] + 1, second])
+                            self.recomendation.append([self.hit[2][0] - 1, second])
+                            self.recomendation.append([self.hit[2][0] + 1, second])
                         self.recomendation.remove(coord)
                 elif self.board[coord[0]][coord[1]] == 3 and (1 <= coord[0] <= 10 and 1 <= coord[1] <= 10):
                     # если клетка уже уничтожена - убрать из рекомендации
